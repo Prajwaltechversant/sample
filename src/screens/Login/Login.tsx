@@ -1,15 +1,17 @@
 import { Alert, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 
 import { RootStackParamList } from '../../../App'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { LoginContextAPI } from '../../context/AuthContext'
 
 
 type LoginProps = NativeStackScreenProps<RootStackParamList, "Login">
 
 const Login = ({ navigation }: LoginProps) => {
 
+    const {tokenStatus,setTokenStatus} = useContext(LoginContextAPI)
     const [userData, setUserdata] = useState<{ username: String; password: any }>({
         username: "",
         password: ""
@@ -28,11 +30,8 @@ const Login = ({ navigation }: LoginProps) => {
             if(isPasswordvalid){
                 // console.log(isPasswordvalid)
                 const token =await AsyncStorage.setItem("user","true");
-
-                const tokentemp = await AsyncStorage.getItem("user")
-                    navigation.navigate('Home')
                 
-
+                setTokenStatus("true")
             }
             else{
                 Alert.alert("Password must contain atleast one Uppercase letter,smaller case letter , Number and One special charactor")

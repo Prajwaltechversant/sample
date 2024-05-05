@@ -1,75 +1,77 @@
-import React, { useEffect, useState } from 'react';
-
-// screens
-import Login from './src/screens/Login/Login';
-import Home from './src/screens/Home/Home';
-// navigation
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack'
+// App.tsx
+import React, {useContext, useEffect, useState} from 'react';
+import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SplashScreen from './src/screens/SplashScreen/SplashScreen';
+import ContextShare, {LoginContextAPI} from './src/context/AuthContext';
+import Home from './src/screens/Home/Home';
+import Login from './src/screens/Login/Login';
 import Details from './src/screens/Details/Details';
 
-
-
 export type RootStackParamList = {
-  Login: undefined,
-  Home: undefined,
+  Login: undefined;
+  Home: undefined;
   Details: {
-    data: any
-  }
+    data: any;
+  };
+};
 
-
-}
-
-const Stack = createNativeStackNavigator<RootStackParamList>()
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function App(): React.JSX.Element {
+  const [token, setToken] = useState<any>(null);
+  const [isLoading, setIsLoading] = React.useState(true);
 
-  const [token, setToken] = useState<any>(false)
-  const [isLoading, setisloading] = React.useState(true)
+  const {tokenStatus, setTokenStatus} = useContext(LoginContextAPI);
 
-  const isLoggedIn = async () => {
-    const isLoeggedIn = await AsyncStorage.getItem('user')
-    console.log(isLoeggedIn, "loginSt")
-    if (isLoeggedIn === "true") {
-      setToken(isLoeggedIn)
-      console.log(token, "token")
+  const checkIsLoggedIn = async () => {
+    const isLoggedIn = await AsyncStorage.getItem('user');
+    
+    if (isLoggedIn) {
+      setToken(isLoggedIn);
+    }else{
+      setToken(null)
     }
-    setisloading(false)
-
-  }
+    setIsLoading(false);
+  };
 
   useEffect(() => {
-    isLoggedIn()
-  }, [])
+    checkIsLoggedIn();
+  // console.log(token,"tokenU")
+  // console.log(tokenStatus,"context")
+  }, [tokenStatus,token]);
+
   if (isLoading) {
-    return (
-      <SplashScreen />
-    )
+    return <SplashScreen />;
   }
+
   return (
     <NavigationContainer>
-      <Stack.Navigator >
-        {
-          token ?
-            <Stack.Screen name='Home'
-              component={Home}
-              options={{
-                title: "Home Page",
-              }}
-            />
-            :
-            <>
-              <Stack.Screen name='Login' component={Login} />
-            </>
+      <Stack.Navigator initialRouteName='Login'>
+        {token ? 
+          <Stack.Screen
+            name="Home"
+            component={Home}
+            options={{
+              title: 'Home Page',
+            }}
+          />
+         : 
+          <>
+            <Stack.Screen name="Login" component={Login} />
+          </>
         }
       </Stack.Navigator>
     </NavigationContainer>
-
   );
 }
-export default App;
 
 
-
+export default function Main(){
+  return(
+    <ContextShare>
+      <App/>
+    </ContextShare>
+  )
+}
